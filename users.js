@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     username: String,
     password: String,
     email: String,
+    gender: String,
     height: String,
     age: Number,
     race: String,
@@ -95,11 +96,10 @@ const validUser = async (req, res, next) => {
 
 // Create user and put into database
 router.post('/', async (req, res) => {
-    // Informacion requerida:
-    // primer nombre, apellido, user, password
-    if (!req.body.firstName || !req.body.lastName || !req.body.username || !req.body.password || !req.body.email || !req.body.height || !req.body.age || !req.body.race || !req.body.city || !req.body.state || !req.body.country)
+    // Required information:
+    if (!req.body.firstName || !req.body.lastName || !req.body.username || !req.body.password || !req.body.email || !req.body.gender || !req.body.height || !req.body.age || !req.body.race || !req.body.city || !req.body.state || !req.body.country)
         return res.status(400).send({
-            message: "first name, last name, username, password, nationality and email are required"
+            message: "All variables required"
         });
 
     try {
@@ -121,6 +121,7 @@ router.post('/', async (req, res) => {
             username: req.body.username,
             password: req.body.password,
             email: req.body.email,
+            gender: req.body.gender,
             height: req.body.height,
             age: req.body.age,
             race: req.body.race,
