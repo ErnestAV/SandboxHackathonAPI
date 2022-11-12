@@ -229,16 +229,14 @@ router.delete("/", validUser, async (req, res) => {
 
 // get ALL users
 router.get("/all", async (req, res) => {
-    try {
-        let users = await User.find().sort({
-            created: -1
+    User.find({}, function (err, users) {
+        var userMap = {};
+        users.forEach(function (user) {
+            userMap[user._id] = user;
         });
-        console.log(users);
-        return res.send(users);
-    } catch (error) {
-        console.log(error);
-        return res.sendStatus(500);
-    }
+
+        res.send(userMap);
+    });
 });
 
 module.exports = {
