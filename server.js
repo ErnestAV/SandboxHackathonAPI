@@ -43,3 +43,8 @@ app.use("/api/users", users.routes);
 // Importing business module and setting API endpoint
 const businesses = require("./business.js");
 app.use("/api/businesses", businesses.routes);
+
+app.get('/welcome', (req, res) => {
+    res.send('Welcome to SandboxHackathon API')
+})
+app.listen(process.env.PORT || 5000, () => console.log('Server listening on port 3001!'));
