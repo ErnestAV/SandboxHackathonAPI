@@ -233,6 +233,7 @@ router.get("/all", async (req, res) => {
         let users = await User.find().sort({
             created: -1
         });
+        console.log(users);
         return res.send(users);
     } catch (error) {
         console.log(error);
