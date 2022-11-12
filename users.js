@@ -232,7 +232,7 @@ router.get("/all", async (req, res) => {
     try {
         let users = await User.find().sort({
             created: -1
-        }).populate('user');
+        });
         return res.send(users);
     } catch (error) {
         console.log(error);
