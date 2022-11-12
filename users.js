@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
     city: String,
     state: String,
     country: String,
+    isModel: Boolean,
     created: {
         type: Date,
         default: Date.now
@@ -129,6 +130,7 @@ router.post('/', async (req, res) => {
             city: req.body.city,
             state: req.body.state,
             country: req.body.country,
+            isModel: true,
         });
         await user.save();
         // informacion de la sesion del usuario

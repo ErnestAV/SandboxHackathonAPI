@@ -39,3 +39,7 @@ app.use(cookieSession({
 // Importing users module and setting API endpoint
 const users = require("./users.js");
 app.use("/api/users", users.routes);
+
+// Importing business module and setting API endpoint
+const businesses = require("./business.js");
+app.use("/api/businesses", businesses.routes);
