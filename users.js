@@ -7,10 +7,6 @@ const app = express();
 
 // User schema
 const userSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User'
-    },
     firstName: String,
     lastName: String,
     username: String,
@@ -236,7 +232,7 @@ router.get("/all", async (req, res) => {
     try {
         let recipes = await Recipe.find().sort({
             created: -1
-        }).populate('user');
+        })
         return res.send(recipes);
     } catch (error) {
         console.log(error);
