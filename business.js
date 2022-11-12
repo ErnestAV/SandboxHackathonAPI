@@ -5,17 +5,13 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const app = express();
 
-// User schema
-const userSchema = new mongoose.Schema({
-    firstName: String,
-    lastName: String,
+// Business schema
+const businessSchema = new mongoose.Schema({
+    companyName: String,
     username: String,
     password: String,
     email: String,
-    gender: String,
-    height: String,
-    age: Number,
-    race: String,
+    businessLink: String,
     city: String,
     state: String,
     country: String,
@@ -25,8 +21,8 @@ const userSchema = new mongoose.Schema({
     },
 });
 
-// User record
-userSchema.pre('save', async function (next) {
+// Business record
+businessSchema.pre('save', async function (next) {
     // Hash si fue modificado o nuevo
     if (!this.isModified('password'))
         return next();
@@ -43,7 +39,7 @@ userSchema.pre('save', async function (next) {
 });
 
 // Compare password
-userSchema.methods.comparePassword = async function (password) {
+businessSchema.methods.comparePassword = async function (password) {
     try {
         const validMatch = await argon2.verify(this.password, password);
         return validMatch;
@@ -52,35 +48,34 @@ userSchema.methods.comparePassword = async function (password) {
     }
 };
 
-// User to JSON
-userSchema.methods.toJSON = function () {
+// Business to JSON
+businessSchema.methods.toJSON = function () {
     var obj = this.toObject();
     delete obj.password;
     return obj;
 }
 
-// Creating user object using mongoose schema
-const User = mongoose.model('User', userSchema);
+// Creating business object using mongoose schema
+const Business = mongoose.model('Business', businessSchema);
 
 /* Middleware */
 
-// Check if valid user
-const validUser = async (req, res, next) => {
-    if (!req.session.userID)
+const validBusiness = async (req, res, next) => {
+    if (!req.session.businessID)
         return res.status(403).send({
             message: "not logged in"
         });
     try {
-        const user = await User.findOne({
-            _id: req.session.userID
+        const business = await Business.findOne({
+            _id: req.session.businessID
         });
-        if (!user) {
+        if (!business) {
             return res.status(403).send({
                 message: "not logged in"
             });
         }
         // pedir al usuario loggeado
-        req.user = user;
+        req.business = business;
     } catch (error) {
         // error si usuario no existe
         return res.status(403).send({
@@ -94,57 +89,53 @@ const validUser = async (req, res, next) => {
 
 /* API Endpoints */
 
-// Create user and put into database
+// Create business and put into database
 router.post('/', async (req, res) => {
-    // Not required: || !req.body.city || !req.body.state || !req.body.country
+    // Not required: || !req.body.city || !req.body.state || !req.body.country || !req.body.businessLink
     // Required information:
-    if (!req.body.firstName || !req.body.lastName || !req.body.username || !req.body.password || !req.body.email || !req.body.gender || !req.body.height || !req.body.age || !req.body.race)
+    if (!req.body.companyName || !req.body.username || !req.body.password || !req.body.email)
         return res.status(400).send({
-            message: "All variables required except for city, state, country"
+            message: "All variables required except for city, state, country, or business link"
         });
 
     try {
 
         //  Chequear si usario ya existe
-        const existingUser = await User.findOne({
+        const existingBusinessUsername = await Business.findOne({
             username: req.body.username
         });
-        if (existingUser) {
+        if (existingBusinessUsername) {
             return res.status(403).send({
                 message: "username already exists"
             });
         }
 
         // crear nuevo usuario y subirlo a la base de datos
-        const user = new User({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
+        const business = new Business({
+            companyName: req.body.companyName,
             username: req.body.username,
             password: req.body.password,
             email: req.body.email,
-            gender: req.body.gender,
-            height: req.body.height,
-            age: req.body.age,
-            race: req.body.race,
+            businessLink: req.body.businessLink,
             city: req.body.city,
             state: req.body.state,
             country: req.body.country,
         });
-        await user.save();
+        await business.save();
         // informacion de la sesion del usuario
-        req.session.userID = user._id;
+        req.session.businessID = business._id;
         const payload = {
             check: true,
-            user: user
+            business: business
         };
         const token = jwt.sign(payload, process.env.SECRET_JWT, {
             expiresIn: 1440
         });
         // hacer saber que el usuario fue creado
         return res.status(200).send({
-            message: "User created",
+            message: "Business created",
             status: true,
-            user: user,
+            business: business,
             token: token
         });
     } catch (error) {
@@ -153,27 +144,26 @@ router.post('/', async (req, res) => {
     }
 });
 
-
-// loggear a un usuario
+// logging business
 router.post('/login', async (req, res) => {
-    // Requerir usuario y contraseña
+    // Require username and password
     if (!req.body.username || !req.body.password)
         return res.sendStatus(400);
 
     try {
         //  Ver el record del usuario
-        const user = await User.findOne({
+        const business = await Business.findOne({
             username: req.body.username
         });
         // Error si el usuario es malo
-        if (!user)
+        if (!business)
             return res.status(403).send({
                 status: false,
                 message: "username or password is wrong"
             });
 
         // Error si el password es malo
-        if (!await user.comparePassword(req.body.password))
+        if (!await business.comparePassword(req.body.password))
             return res.status(403).send({
                 status: false,
                 message: "username or password is wrong"
@@ -181,17 +171,15 @@ router.post('/login', async (req, res) => {
 
         const payload = {
             check: true,
-            user: user
+            business: business
         };
         const token = jwt.sign(payload, process.env.SECRET_JWT, {
             expiresIn: 1440
         });
-        // Informacion de la sesión del usuario
-        //req.session.userID = user._id;
 
         return res.status(200).send({
             status: true,
-            user: user,
+            business: business,
             token: token
         });
 
@@ -201,13 +189,13 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Get the current user
-router.get('/:userID', async (req, res) => {
+// Get the current business
+router.get('/:businessID', async (req, res) => {
     try {
-        let userFound = await User.findOne({ _id: req.params.userID });
-        console.log(userFound)
-        await userFound.save();
-        return res.send(userFound);
+        let businessFound = await Business.findOne({ _id: req.params.businessID });
+        console.log(businessFound)
+        await businessFound.save();
+        return res.send(businessFound);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
@@ -215,7 +203,7 @@ router.get('/:userID', async (req, res) => {
 });
 
 // Log out
-router.delete("/", validUser, async (req, res) => {
+router.delete("/", validBusiness, async (req, res) => {
     try {
         req.session = null;
         res.sendStatus(200);
@@ -227,6 +215,6 @@ router.delete("/", validUser, async (req, res) => {
 
 module.exports = {
     routes: router,
-    model: User,
-    valid: validUser
+    model: Business,
+    valid: validBusiness
 };
