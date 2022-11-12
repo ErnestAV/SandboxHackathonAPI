@@ -7,6 +7,10 @@ const app = express();
 
 // User schema
 const userSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+    },
     firstName: String,
     lastName: String,
     username: String,
@@ -227,16 +231,17 @@ router.delete("/", validUser, async (req, res) => {
     }
 });
 
-// get ALL users
+// agarrar TODAS las recetas para search
 router.get("/all", async (req, res) => {
-    User.find({}, function (err, users) {
-        var userMap = {};
-        users.forEach(function (user) {
-            userMap[user._id] = user;
-        });
-
-        res.send(userMap);
-    });
+    try {
+        let recipes = await Recipe.find().sort({
+            created: -1
+        }).populate('user');
+        return res.send(recipes);
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
 });
 
 module.exports = {
