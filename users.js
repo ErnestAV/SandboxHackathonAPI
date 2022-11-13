@@ -231,8 +231,8 @@ router.delete("/", validUser, async (req, res) => {
 router.get("/all", async (req, res) => {
     try {
         let users = await User.find();
-        let userMap = users.map((user) => { return user._doc });
-        return res.send(userMap);
+        await users.save();
+        return res.send(users);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
