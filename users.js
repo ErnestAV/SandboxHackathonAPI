@@ -230,7 +230,7 @@ router.delete("/", validUser, async (req, res) => {
 // agarrar TODAS las recetas para search
 router.get("/all", async (req, res) => {
     try {
-        let users = await User.find();
+        let users = await User.find().sort({});
         await users.save();
         return res.send(users);
     } catch (error) {
