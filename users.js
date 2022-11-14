@@ -203,18 +203,18 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Get the current user
-router.get('/:userID', async (req, res) => {
-    try {
-        let userFound = await User.findOne({ _id: req.params.userID });
-        console.log(userFound)
-        await userFound.save();
-        return res.send(userFound);
-    } catch (error) {
-        console.log(error);
-        return res.sendStatus(500);
-    }
-});
+// // Get the current user
+// router.get('/:userID', async (req, res) => {
+//     try {
+//         let userFound = await User.findOne({ _id: req.params.userID });
+//         console.log(userFound)
+//         await userFound.save();
+//         return res.send(userFound);
+//     } catch (error) {
+//         console.log(error);
+//         return res.sendStatus(500);
+//     }
+// });
 
 // Log out
 router.delete("/", validUser, async (req, res) => {
