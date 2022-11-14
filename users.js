@@ -230,7 +230,7 @@ router.delete("/", validUser, async (req, res) => {
 // agarrar TODAS las recetas para search
 router.get("/all", async (req, res) => {
     try {
-        const users = await User.findById().select('-passwordHash');
+        const users = await User.findById();
         // await users.save();
         return res.send(users);
     } catch (error) {
